@@ -16,6 +16,9 @@
     ],
     "baseUrl": ".",
     "paths": {
+      "@angularlicious/logging": [
+        "libs/logging/src/index.ts"
+      ]
     }
   },
   "exclude": [
