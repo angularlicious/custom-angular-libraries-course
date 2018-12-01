@@ -37,7 +37,7 @@ Use the following command to generate a new project of type `library`. There are
 ng generate lib logging --publishable
 ```
 
->Note the use of the `--publishable` option. This is an exclusive feature of the `Nx` Workspace from [https://www.nrwl.io](Nrwl.io).
+>Note the use of the `--publishable` option. This is an exclusive feature of the `Nx` Workspace from [https://www.nrwl.io](Nrwl.io). 
 
 The output of the CLI command:
 
@@ -56,4 +56,150 @@ UPDATE angular.json (1392 bytes)
 UPDATE package.json (2614 bytes)
 UPDATE nx.json (248 bytes)
 UPDATE tsconfig.json (502 bytes)
+```
+
+### Workspace Updates When a Library is Generated
+
+The following `devDependencies are added to the workspace to support building the library using `ng-packagr`. 
+
+```json
+"@angular-devkit/build-ng-packagr": "~0.10.0",
+"ng-packagr": "^4.2.0",
+"tsickle": ">=0.29.0",
+"tslib": "^1.9.0",
+```
+
+tsconfig.json
+```json
+"paths": {
+    "@angularlicious/logging": [
+    "libs/logging/src/index.ts"
+    ]
+}
+```
+
+angular.json
+```json
+ "projects": {
+    "logging": {
+      "root": "libs/logging",
+      "sourceRoot": "libs/logging/src",
+      "projectType": "library",
+      "prefix": "angularlicious",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "libs/logging/tsconfig.lib.json",
+            "project": "libs/logging/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "libs/logging/src/test.ts",
+            "tsConfig": "libs/logging/tsconfig.spec.json",
+            "karmaConfig": "libs/logging/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/logging/tsconfig.lib.json",
+              "libs/logging/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    }
+  },
+  ```
+
+  ### Anatomy of an Angular Library
+
+  package.json
+  ```json
+  {
+  "name": "@angularlicious/logging",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^6.0.0-rc.0 || ^6.0.0",
+    "@angular/core": "^6.0.0-rc.0 || ^6.0.0"
+  }
+}
+```
+
+ng-package.json
+```json
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../dist/libs/logging",
+  "lib": {
+    "entryFile": "src/index.ts"
+  }
+}
+```
+
+tsconfig.lib.json
+```json
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc/libs/logging",
+    "target": "es2015",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "types": [],
+    "lib": [
+      "dom",
+      "es2018"
+    ]
+  },
+  "angularCompilerOptions": {
+    "annotateForClosureCompiler": true,
+    "skipTemplateCodegen": true,
+    "strictMetadataEmit": true,
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "enableResourceInlining": true
+  },
+  "exclude": [
+    "src/test.ts",
+    "**/*.spec.ts"
+  ]
+}
+```
+
+### Library Project Source (`src`)
+
+All libraries need an entry point. The `index` barrel file contains a list of all 
+items in the library that are accessible by consumers of the library. If it *ain't* in 
+this file, no one will see it. By default the template names this file `index`.
+
+index.ts
+```ts
+export * from './lib/logging.module';
+```
+
+The `@NgModule` for the library.
+
+logging.module.ts
+```ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@NgModule({
+  imports: [CommonModule]
+})
+export class LoggingModule {}
 ```
