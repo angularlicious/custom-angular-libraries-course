@@ -121,6 +121,10 @@ angular.json
 
   ### Anatomy of an Angular Library
 
+Notice:
+
+* the package contains a `peerDependencies` section. The `dependencies` and/or the `devDependencies` are contained in the workspace `package.json`. You will need to specify any `peer` dependencies using this section in the library source - this will provide consumers of your library a message regarding the dependencies when the `npm install` the library (if published).
+
   package.json
   ```json
   {
@@ -203,3 +207,57 @@ import { CommonModule } from '@angular/common';
 })
 export class LoggingModule {}
 ```
+
+### Build an Angular Library
+
+Build a specified library by using the `npm run build` command with the `--project` option to 
+specify the project that you want to build. It is going to kick-off the `ng-build` for the specified project. 
+
+```ts
+npm run build --project=logging
+```
+
+The configuration for the project in the `angular.json` contains the `build` information. Notice, that the library project is setup to use the `@angular-devkit/build-ng-packagr:build` package with the command to `build`. Remember, the library project contains additional `ng-packagr` configuration information. 
+
+```json
+"build": {
+    "builder": "@angular-devkit/build-ng-packagr:build",
+    "options": {
+    "tsConfig": "libs/logging/tsconfig.lib.json",
+    "project": "libs/logging/ng-package.json"
+    }
+},
+```
+
+The `ng-packagr` outputs the build to the specified `outDir`. It uses the Angular Package Format guidelines to create builds for different types of consumers. Thing to note:
+
+* uses the npm scope name for the entry point
+* uses the `ngc` compiler
+* creates bundles for different consumer types
+    * FESM2015
+    * FESM5
+    * UMD with minification
+* cleans up the `package.json` file - required to publishing to npm
+* outputs to destination directory
+
+```ts
+Building Angular Package
+Building entry point '@angularlicious/logging'
+Compiling TypeScript sources through ngc
+Bundling to FESM2015
+Bundling to FESM5
+Bundling to UMD
+Minifying UMD bundle
+Copying declaration files
+Writing package metadata
+Removing scripts section in package.json as it's considered a potential security vulnerability.
+Built @angularlicious/logging
+Built Angular Package!
+ - from: D:\development\github\custom-angular-libraries-course\getting-started-with-libs\libs\logging
+ - to:   D:\development\github\custom-angular-libraries-course\getting-started-with-libs\dist\libs\loggingng
+ ```
+
+> Use the `ngc` compiler against the library directly to get more precise error messages if you require more details.
+
+### Using the Library
+
