@@ -371,4 +371,6 @@ Some benefits:
 * smaller bundles
     * only includes code that is actually used by the consumer of the library
 * use scoped name as if it were a published library
-* consistent usage if the library was published or used within an Angular workspace. 
+* consistent usage if the library is either published or used within an Angular workspace.
+* provides a shared resource within the workspace
+* has the capability to be published to a private/public npm repository
