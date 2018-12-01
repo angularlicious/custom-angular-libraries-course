@@ -259,11 +259,51 @@ Built Angular Package!
 
 ### Adding a Service to Angular Libraries
 
-Add a new `service` to the library project. Angular services are `@Injectable` - therefore, the library should be responsible for providing a service for any applications. Consumers of the library should do this. The new service should be added to the library's `index.ts` file (manifest) to indicate it is accessible to consumers.
+Add a new `service` to the library project. Angular services are `@Injectable` - therefore, the library should be responsible for providing a service for any applications. Consumers of the library should do this.
 
 ```ts
 ng generate service -help
 ng generate service --name=logging --project=logging --spec=false --dry-run
+```
+
+The new service should be added to the library's `index.ts` file (manifest) to indicate it is accessible to consumers.
+
+index.ts
+```ts
+export * from './lib/logging.module';
+export * from './lib/logging.service';
+```
+
+The CLI generates a service for the library. However, it isn't doing much at the moment. Empty constructor, no methods, and no public properties.
+
+```ts
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LoggingService {
+
+  constructor() { }
+}
+```
+
+The easiest implementation for demonstration purposes is to add a `log()` method to `console.log` a string message sent in by consumers of the library.
+
+```ts
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LoggingService {
+
+  constructor() { }
+
+  public log(message: string) {
+    console.log(message);
+  }
+}
 ```
 
 ### Using the Library
@@ -303,3 +343,32 @@ UPDATE angular.json (5665 bytes)
 UPDATE package.json (2614 bytes)
 UPDATE nx.json (352 bytes)
 ```
+
+### Using Custom Libraries in an Angular Workspace
+
+If you are consuming libraries that are part of the Angular Workspace project list, you do not need to go through the process of building, publishing, and installing the libraries for a consumer application. The Angular Workspace simplifies this developer workflow. Typically, we would attempt to install a desired package from npm - this package may or may not have a scope. I like scopes. The sample libraries in this workspace use the scope name `angularlicious`. 
+
+When we want to use the `logging` library with the scope name, we use `@angularlicious/logging`. This is familiar to common usage of packages. However, in the workspace, we can reference the packages using the scope and library name without *installing* any packages. Since the library projects are already part of the Angular Workspace it is not necessary. 
+
+Benefits:
+* Tree Shaking
+* Simplified Developer Workflow
+
+*How is this possible?* When `library` projects are generated. The workspace `tsconfig.json` is updated with path mappings in the `path` section. It basically points the scoped library name to the actual entry point of the library source code  . 
+
+```json
+ "paths": {
+      "@angularlicious/logging": [
+        "libs/logging/src/index.ts"
+      ]
+    }
+```
+
+This allows the consumer application to point to the library using the scoped name - in our example it is `@angularlicious/logging`. However, during the build process of a consumer (i.e., projects with type `application` or `library`), the builder will point to the correct location of the library. The build process will use the only source from library that is used by the consumer (i.e., tree shaking).
+
+Some benefits:
+
+* smaller bundles
+    * only includes code that is actually used by the consumer of the library
+* use scoped name as if it were a published library
+* consistent usage if the library was published or used within an Angular workspace. 
