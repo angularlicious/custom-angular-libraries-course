@@ -37,6 +37,137 @@
           }
         }
       }
+    },
+    "logging-consumer": {
+      "root": "apps/logging-consumer/",
+      "sourceRoot": "apps/logging-consumer/src",
+      "projectType": "application",
+      "prefix": "angularlicious",
+      "schematics": {
+        "@schematics/angular:component": {
+          "styleext": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/apps/logging-consumer",
+            "index": "apps/logging-consumer/src/index.html",
+            "main": "apps/logging-consumer/src/main.ts",
+            "polyfills": "apps/logging-consumer/src/polyfills.ts",
+            "tsConfig": "apps/logging-consumer/tsconfig.app.json",
+            "assets": [
+              "apps/logging-consumer/src/favicon.ico",
+              "apps/logging-consumer/src/assets"
+            ],
+            "styles": [
+              "apps/logging-consumer/src/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/logging-consumer/src/environments/environment.ts",
+                  "with": "apps/logging-consumer/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "logging-consumer:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "logging-consumer:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "logging-consumer:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "apps/logging-consumer/src/test.ts",
+            "polyfills": "apps/logging-consumer/src/polyfills.ts",
+            "tsConfig": "apps/logging-consumer/tsconfig.spec.json",
+            "karmaConfig": "apps/logging-consumer/karma.conf.js",
+            "styles": [
+              "apps/logging-consumer/src/styles.scss"
+            ],
+            "scripts": [],
+            "assets": [
+              "apps/logging-consumer/src/favicon.ico",
+              "apps/logging-consumer/src/assets"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/logging-consumer/tsconfig.app.json",
+              "apps/logging-consumer/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "logging-consumer-e2e": {
+      "root": "apps/logging-consumer-e2e",
+      "projectType": "application",
+      "prefix": "",
+      "architect": {
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "apps/logging-consumer-e2e/protractor.conf.js",
+            "devServerTarget": "logging-consumer:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "logging-consumer:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": "apps/logging-consumer-e2e/tsconfig.e2e.json",
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
   "cli": {

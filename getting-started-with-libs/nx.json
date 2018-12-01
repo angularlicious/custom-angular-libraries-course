@@ -10,6 +10,12 @@
   "projects": {
     "logging": {
       "tags": []
+    },
+    "logging-consumer": {
+      "tags": []
+    },
+    "logging-consumer-e2e": {
+      "tags": []
     }
   }
 }
