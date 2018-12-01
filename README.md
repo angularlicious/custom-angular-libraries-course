@@ -121,19 +121,17 @@ angular.json
 
   ### Anatomy of an Angular Library
 
-Notice:
-
-* the package contains a `peerDependencies` section. The `dependencies` and/or the `devDependencies` are contained in the workspace `package.json`. You will need to specify any `peer` dependencies using this section in the library source - this will provide consumers of your library a message regarding the dependencies when the `npm install` the library (if published).
+Notice the package contains a `peerDependencies` section. The `dependencies` and/or the `devDependencies` are contained in the workspace `package.json`. You will need to specify any `peer` dependencies using this section in the library source - this will provide consumers of your library a message regarding the dependencies when the `npm install` the library (if published).
 
   package.json
-  ```json
-  {
-  "name": "@angularlicious/logging",
-  "version": "0.0.1",
-  "peerDependencies": {
-    "@angular/common": "^6.0.0-rc.0 || ^6.0.0",
-    "@angular/core": "^6.0.0-rc.0 || ^6.0.0"
-  }
+```json
+{
+    "name": "@angularlicious/logging",
+    "version": "0.0.1",
+        "peerDependencies": {
+        "@angular/common": "^6.0.0-rc.0 || ^6.0.0",
+        "@angular/core": "^6.0.0-rc.0 || ^6.0.0"
+        }
 }
 ```
 
@@ -229,7 +227,7 @@ The configuration for the project in the `angular.json` contains the `build` inf
 },
 ```
 
-The `ng-packagr` outputs the build to the specified `outDir`. It uses the Angular Package Format guidelines to create builds for different types of consumers. Thing to note:
+The `ng-packagr` outputs the build to the specified `outDir` as defined in the library's `ng-package.json` file. It uses the Angular Package Format guidelines to create builds for different types of consumers. Things to note:
 
 * uses the npm scope name for the entry point
 * uses the `ngc` compiler
@@ -259,5 +257,49 @@ Built Angular Package!
 
 > Use the `ngc` compiler against the library directly to get more precise error messages if you require more details.
 
+### Adding a Service to Angular Libraries
+
+Add a new `service` to the library project. Angular services are `@Injectable` - therefore, the library should be responsible for providing a service for any applications. Consumers of the library should do this. The new service should be added to the library's `index.ts` file (manifest) to indicate it is accessible to consumers.
+
+```ts
+ng generate service -help
+ng generate service --name=logging --project=logging --spec=false --dry-run
+```
+
 ### Using the Library
 
+Create a new `application` project to consume/use the `library` project.
+
+```ts
+ng generate application --help # to see options for application project
+ng generate application logging-consumer --routing --style=scss --dry-run # remote --dry-run to add/update workspace files
+```
+
+```ts
+CREATE apps/logging-consumer-e2e/protractor.conf.js (752 bytes)
+CREATE apps/logging-consumer-e2e/tsconfig.e2e.json (247 bytes)
+CREATE apps/logging-consumer-e2e/src/app.e2e-spec.ts (312 bytes)
+CREATE apps/logging-consumer-e2e/src/app.po.ts (219 bytes)
+CREATE apps/logging-consumer/browserslist (388 bytes)
+CREATE apps/logging-consumer/karma.conf.js (493 bytes)
+CREATE apps/logging-consumer/tsconfig.app.json (229 bytes)
+CREATE apps/logging-consumer/tsconfig.spec.json (292 bytes)
+CREATE apps/logging-consumer/tslint.json (269 bytes)
+CREATE apps/logging-consumer/src/favicon.ico (5430 bytes)
+CREATE apps/logging-consumer/src/index.html (324 bytes)
+CREATE apps/logging-consumer/src/main.ts (372 bytes)
+CREATE apps/logging-consumer/src/polyfills.ts (3234 bytes)
+CREATE apps/logging-consumer/src/test.ts (642 bytes)
+CREATE apps/logging-consumer/src/styles.scss (80 bytes)
+CREATE apps/logging-consumer/src/assets/.gitkeep (0 bytes)
+CREATE apps/logging-consumer/src/environments/environment.prod.ts (51 bytes)
+CREATE apps/logging-consumer/src/environments/environment.ts (662 bytes)
+CREATE apps/logging-consumer/src/app/app.module.ts (485 bytes)
+CREATE apps/logging-consumer/src/app/app.component.html (602 bytes)
+CREATE apps/logging-consumer/src/app/app.component.spec.ts (1103 bytes)
+CREATE apps/logging-consumer/src/app/app.component.ts (232 bytes)
+CREATE apps/logging-consumer/src/app/app.component.scss (0 bytes)
+UPDATE angular.json (5665 bytes)
+UPDATE package.json (2614 bytes)
+UPDATE nx.json (352 bytes)
+```
