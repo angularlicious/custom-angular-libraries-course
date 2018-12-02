@@ -374,3 +374,95 @@ Some benefits:
 * consistent usage if the library is either published or used within an Angular workspace.
 * provides a shared resource within the workspace
 * has the capability to be published to a private/public npm repository
+
+## Adding Configuration to a Library
+
+Add a new library to the workspace. This library project will be enabled to provide configuration to your library (module). Many 
+
+```ts
+ng generate library logging-with-config --publishable
+```
+
+```ts
+CREATE libs/logging-with-config/karma.conf.js (496 bytes)
+CREATE libs/logging-with-config/ng-package.json (169 bytes)
+CREATE libs/logging-with-config/package.json (196 bytes)
+CREATE libs/logging-with-config/tsconfig.lib.json (752 bytes)
+CREATE libs/logging-with-config/tsconfig.spec.json (271 bytes)
+CREATE libs/logging-with-config/tslint.json (269 bytes)
+CREATE libs/logging-with-config/src/test.ts (700 bytes)
+CREATE libs/logging-with-config/src/index.ts (67 bytes)
+CREATE libs/logging-with-config/src/lib/logging-with-config.module.ts (262 bytes)
+CREATE libs/logging-with-config/src/lib/logging-with-config.module.spec.ts (483 bytes)
+UPDATE angular.json (6836 bytes)
+UPDATE package.json (2690 bytes)
+UPDATE nx.json (405 bytes)
+UPDATE tsconfig.json (606 bytes)
+```
+
+Add a configuration class.
+
+```ts
+ng generate class loggingWithConfig --project=logging-config --spec=false --dry-run
+```
+
+```ts
+export class LoggingConfig {
+    name: string
+}
+```
+
+Configure the library's module to accept configuration.
+
+* import the configuration class
+* add static method `forRoot`
+* provide the configuration
+  * creates an injectable scoped to the module
+
+```ts
+import { NgModule, ModuleWithProviders } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { LoggingConfig } from './logging-config';
+
+@NgModule({
+  imports: [CommonModule]
+})
+export class LoggingWithConfigModule {
+  static forRoot(config: LoggingConfig): ModuleWithProviders {
+    return {
+      ngModule: LoggingWithConfigModule,
+      providers: [
+        {
+          provide: LoggingConfig,
+          useValue: config
+        }
+      ]
+    }
+  }
+}
+```
+
+Add a new service to the library.
+
+```ts
+import { Injectable } from "@angular/core";
+import { LoggingConfig } from "./logging-config";
+
+
+@Injectable()
+export class LoggingWithConfigService {
+
+    name: string;
+    
+    constructor(config: LoggingConfig) {
+        this.name = config.name;
+    }
+
+    /**
+     * Use to log information to the console.
+     */
+    log(message: string) {
+        console.log(`${this.name}: ${message} at ${new Date(Date.now()).toLocaleTimeString()}`);
+    }
+}
+```
