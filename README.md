@@ -1,4 +1,4 @@
-# custom-angular-libraries-course
+# Custom Angular Libraries Course
 
 A course on developing, testing, integrating, and publishing custom Angular libraries.
 
