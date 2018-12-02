@@ -374,3 +374,67 @@ Some benefits:
 * consistent usage if the library is either published or used within an Angular workspace.
 * provides a shared resource within the workspace
 * has the capability to be published to a private/public npm repository
+
+Update the `AppModule` to use the new `Logging` library. 
+
+* add import statement for item(s) in the `@angularlicious/logging` library 
+* add the `LoggingModule` to the `imports` array
+* add the `LoggingService` to the `providers` array
+
+app.module.ts
+```ts
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+
+import { AppComponent } from './app.component';
+import { NxModule } from '@nrwl/nx';
+import { RouterModule } from '@angular/router';
+import { LoggingModule, LoggingService } from '@angularlicious/logging';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    NxModule.forRoot(),
+    RouterModule.forRoot([], { initialNavigation: 'enabled' }),
+    LoggingModule
+  ],
+  providers: [
+    LoggingService
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+```
+
+Now that the `Logging` library is referenced for use by the application, update the `AppComponent` to use the `LoggingService`. 
+
+* add import statement for the `LoggingService` from the `@angularlicious/logging`
+* add the logging service to the constructor signature
+* update component to implement `OnInit`
+* update component to use the logging service
+
+```ts
+import { Component, OnInit } from '@angular/core';
+import { LoggingService } from '@angularlicious/logging';
+
+@Component({
+  selector: 'angularlicious-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit {
+
+  title = 'logging-consumer';
+
+  constructor(
+    private loggingService: LoggingService
+  ) {
+    this.loggingService.log(`Message from constructor at ${new Date(Date.now()).toLocaleTimeString()}`)
+  }
+
+  ngOnInit(): void {
+    this.loggingService.log(`Message from ngOnInit at ${new Date(Date.now()).toLocaleTimeString()}`)
+  }
+}
+```
