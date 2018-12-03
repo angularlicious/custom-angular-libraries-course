@@ -4,12 +4,12 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NxModule } from '@nrwl/nx';
 import { RouterModule } from '@angular/router';
-import { LoggingWithConfigModule } from '@angularlicious/logging-with-config';
 import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
 
 const config = {
   name: 'NG-APP-CONFIG'
 }
+import { LoggingModule, LoggingService } from '@angularlicious/logging';
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,6 +21,9 @@ const config = {
   ],
   providers: [
     LoggingWithConfigService
+  ],
+  providers: [
+    LoggingService
   ],
   bootstrap: [AppComponent]
 })
