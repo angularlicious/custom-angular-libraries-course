@@ -2,6 +2,22 @@
 
 A course on developing, testing, integrating, and publishing custom Angular libraries.
 
+- [Custom Angular Libraries Course](#custom-angular-libraries-course)
+  - [Getting Started with Libraries](#getting-started-with-libraries)
+    - [Generate a Library Project](#generate-a-library-project)
+    - [Workspace Updates When a Library is Generated](#workspace-updates-when-a-library-is-generated)
+    - [Library Project Source (`src`)](#library-project-source-src)
+    - [Build an Angular Library](#build-an-angular-library)
+    - [Adding a Service to Angular Libraries](#adding-a-service-to-angular-libraries)
+    - [Using the Library](#using-the-library)
+    - [Using Custom Libraries in an Angular Workspace](#using-custom-libraries-in-an-angular-workspace)
+  - [Adding Configuration to a Library](#adding-configuration-to-a-library)
+    - [Configuration Model](#configuration-model)
+    - [Configure Module Configuration](#configure-module-configuration)
+    - [Add Service to the Library](#add-service-to-the-library)
+    - [AppModule Configuration](#appmodule-configuration)
+    - [Use the LoggingService](#use-the-loggingservice)
+
 ## Getting Started with Libraries
 
 Create a new workspace for developing libraries. This sample will use the Angular 6/Nrwl.io Nx workspace. The Nx workspace is an enhanced environment that extends some of the capabilities of the default Angular 6 workspace. 
@@ -400,10 +416,11 @@ UPDATE nx.json (405 bytes)
 UPDATE tsconfig.json (606 bytes)
 ```
 
+### Configuration Model
 Add a configuration class.
 
 ```ts
-ng generate class loggingWithConfig --project=logging-config --spec=false --dry-run
+ng generate class loggingConfig --project=logging-config --spec=false --dry-run
 ```
 
 ```ts
@@ -411,6 +428,14 @@ export class LoggingConfig {
     name: string
 }
 ```
+
+>Remember to add the new item to the barrel file (index.ts)
+
+```ts
+export { LoggingConfig } from './lib/logging-config';
+```
+
+### Configure Module Configuration
 
 Configure the library's module to accept configuration.
 
@@ -442,7 +467,7 @@ export class LoggingWithConfigModule {
 }
 ```
 
-Add a new service to the library.
+### Add Service to the Library
 
 ```ts
 import { Injectable } from "@angular/core";
@@ -464,5 +489,77 @@ export class LoggingWithConfigService {
     log(message: string) {
         console.log(`${this.name}: ${message} at ${new Date(Date.now()).toLocaleTimeString()}`);
     }
+}
+```
+
+>Remember to add the new member to the barrel.
+
+```ts
+export { LoggingWithConfigService } from './lib/logging-with-config.service';
+```
+
+### AppModule Configuration
+Update the application module to load the module with configuration.
+
+```ts
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+
+import { AppComponent } from './app.component';
+import { NxModule } from '@nrwl/nx';
+import { RouterModule } from '@angular/router';
+import { LoggingWithConfigModule } from '@angularlicious/logging-with-config';
+import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
+
+const config = {
+  name: 'NG-APP-CONFIG'
+}
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    NxModule.forRoot(),
+    RouterModule.forRoot([], { initialNavigation: 'enabled' }),
+    LoggingWithConfigModule.forRoot(config)
+  ],
+  providers: [
+    LoggingWithConfigService
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+```
+
+### Use the LoggingService
+
+Using the service from the custom library. 
+
+* add imports
+* use DI to inject the service - component constructor
+* use service in component 
+
+```ts
+import { Component, OnInit } from '@angular/core';
+import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
+
+@Component({
+  selector: 'angularlicious-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit {
+ 
+  title = 'logging-consumer';
+
+  constructor(
+    private loggingService: LoggingWithConfigService
+  ) {
+    this.loggingService.log(`Running constructor from AppComponent`);
+  }
+
+  ngOnInit(): void {
+    this.loggingService.log(`Running ngOnInit from AppComponent`);
+  }
 }
 ```
