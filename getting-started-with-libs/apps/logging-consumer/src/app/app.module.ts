@@ -4,6 +4,11 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NxModule } from '@nrwl/nx';
 import { RouterModule } from '@angular/router';
+import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
+
+const config = {
+  name: 'NG-APP-CONFIG'
+}
 import { LoggingModule, LoggingService } from '@angularlicious/logging';
 
 @NgModule({
@@ -12,7 +17,10 @@ import { LoggingModule, LoggingService } from '@angularlicious/logging';
     BrowserModule,
     NxModule.forRoot(),
     RouterModule.forRoot([], { initialNavigation: 'enabled' }),
-    LoggingModule
+    LoggingWithConfigModule.forRoot(config)
+  ],
+  providers: [
+    LoggingWithConfigService
   ],
   providers: [
     LoggingService

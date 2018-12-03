@@ -2,6 +2,27 @@
 
 A course on developing, testing, integrating, and publishing custom Angular libraries.
 
+- [Custom Angular Libraries Course](#custom-angular-libraries-course)
+  - [Getting Started with Libraries](#getting-started-with-libraries)
+    - [Generate a Library Project](#generate-a-library-project)
+    - [Workspace Updates When a Library is Generated](#workspace-updates-when-a-library-is-generated)
+    - [Library Project Source (`src`)](#library-project-source-src)
+    - [Build an Angular Library](#build-an-angular-library)
+    - [Adding a Service to Angular Libraries](#adding-a-service-to-angular-libraries)
+    - [Using the Library](#using-the-library)
+    - [Using Custom Libraries in an Angular Workspace](#using-custom-libraries-in-an-angular-workspace)
+  - [Adding Configuration to a Library](#adding-configuration-to-a-library)
+    - [Configuration Model](#configuration-model)
+    - [Configure Module Configuration](#configure-module-configuration)
+    - [Add Service to the Library](#add-service-to-the-library)
+    - [AppModule Configuration](#appmodule-configuration)
+    - [Use the LoggingService](#use-the-loggingservice)
+  - [Publishing Custom Libraries](#publishing-custom-libraries)
+    - [Update the Package Information](#update-the-package-information)
+    - [Build the Library for Distribution/Publishing](#build-the-library-for-distributionpublishing)
+    - [Git Repository](#git-repository)
+    - [Emulate Publishing with NPM Link](#emulate-publishing-with-npm-link)
+
 ## Getting Started with Libraries
 
 Create a new workspace for developing libraries. This sample will use the Angular 6/Nrwl.io Nx workspace. The Nx workspace is an enhanced environment that extends some of the capabilities of the default Angular 6 workspace. 
@@ -60,7 +81,7 @@ UPDATE tsconfig.json (502 bytes)
 
 ### Workspace Updates When a Library is Generated
 
-The following `devDependencies are added to the workspace to support building the library using `ng-packagr`. 
+The following `devDependencies` are added to the workspace to support building the library using `ng-packagr`. 
 
 ```json
 "@angular-devkit/build-ng-packagr": "~0.10.0",
@@ -375,13 +396,116 @@ Some benefits:
 * provides a shared resource within the workspace
 * has the capability to be published to a private/public npm repository
 
-Update the `AppModule` to use the new `Logging` library. 
+## Adding Configuration to a Library
 
-* add import statement for item(s) in the `@angularlicious/logging` library 
-* add the `LoggingModule` to the `imports` array
-* add the `LoggingService` to the `providers` array
+Add a new library to the workspace. This library project will be enabled to provide configuration to your library (module). Many 
 
-app.module.ts
+```ts
+ng generate library logging-with-config --publishable
+```
+
+```ts
+CREATE libs/logging-with-config/karma.conf.js (496 bytes)
+CREATE libs/logging-with-config/ng-package.json (169 bytes)
+CREATE libs/logging-with-config/package.json (196 bytes)
+CREATE libs/logging-with-config/tsconfig.lib.json (752 bytes)
+CREATE libs/logging-with-config/tsconfig.spec.json (271 bytes)
+CREATE libs/logging-with-config/tslint.json (269 bytes)
+CREATE libs/logging-with-config/src/test.ts (700 bytes)
+CREATE libs/logging-with-config/src/index.ts (67 bytes)
+CREATE libs/logging-with-config/src/lib/logging-with-config.module.ts (262 bytes)
+CREATE libs/logging-with-config/src/lib/logging-with-config.module.spec.ts (483 bytes)
+UPDATE angular.json (6836 bytes)
+UPDATE package.json (2690 bytes)
+UPDATE nx.json (405 bytes)
+UPDATE tsconfig.json (606 bytes)
+```
+
+### Configuration Model
+Add a configuration class.
+
+```ts
+ng generate class loggingConfig --project=logging-config --spec=false --dry-run
+```
+
+```ts
+export class LoggingConfig {
+    name: string
+}
+```
+
+>Remember to add the new item to the barrel file (index.ts)
+
+```ts
+export { LoggingConfig } from './lib/logging-config';
+```
+
+### Configure Module Configuration
+
+Configure the library's module to accept configuration.
+
+* import the configuration class
+* add static method `forRoot`
+* provide the configuration
+  * creates an injectable scoped to the module
+
+```ts
+import { NgModule, ModuleWithProviders } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { LoggingConfig } from './logging-config';
+
+@NgModule({
+  imports: [CommonModule]
+})
+export class LoggingWithConfigModule {
+  static forRoot(config: LoggingConfig): ModuleWithProviders {
+    return {
+      ngModule: LoggingWithConfigModule,
+      providers: [
+        {
+          provide: LoggingConfig,
+          useValue: config
+        }
+      ]
+    }
+  }
+}
+```
+
+### Add Service to the Library
+
+```ts
+import { Injectable } from "@angular/core";
+import { LoggingConfig } from "./logging-config";
+
+
+@Injectable()
+export class LoggingWithConfigService {
+
+    name: string;
+    
+    constructor(config: LoggingConfig) {
+        this.name = config.name;
+    }
+
+    /**
+     * Use to log information to the console.
+     */
+    log(message: string) {
+        console.log(`${this.name}: ${message} at ${new Date(Date.now()).toLocaleTimeString()}`);
+    }
+}
+```
+
+>Remember to add the new member to the barrel.
+
+```ts
+export { LoggingWithConfigService } from './lib/logging-with-config.service';
+```
+
+### AppModule Configuration
+Update the application module to load the module with configuration.
+
 ```ts
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -389,7 +513,12 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NxModule } from '@nrwl/nx';
 import { RouterModule } from '@angular/router';
-import { LoggingModule, LoggingService } from '@angularlicious/logging';
+import { LoggingWithConfigModule } from '@angularlicious/logging-with-config';
+import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
+
+const config = {
+  name: 'NG-APP-CONFIG'
+}
 
 @NgModule({
   declarations: [AppComponent],
@@ -397,26 +526,27 @@ import { LoggingModule, LoggingService } from '@angularlicious/logging';
     BrowserModule,
     NxModule.forRoot(),
     RouterModule.forRoot([], { initialNavigation: 'enabled' }),
-    LoggingModule
+    LoggingWithConfigModule.forRoot(config)
   ],
   providers: [
-    LoggingService
+    LoggingWithConfigService
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule {}
 ```
 
-Now that the `Logging` library is referenced for use by the application, update the `AppComponent` to use the `LoggingService`. 
+### Use the LoggingService
 
-* add import statement for the `LoggingService` from the `@angularlicious/logging`
-* add the logging service to the constructor signature
-* update component to implement `OnInit`
-* update component to use the logging service
+Using the service from the custom library. 
+
+* add imports
+* use DI to inject the service - component constructor
+* use service in component 
 
 ```ts
 import { Component, OnInit } from '@angular/core';
-import { LoggingService } from '@angularlicious/logging';
+import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
 
 @Component({
   selector: 'angularlicious-root',
@@ -424,17 +554,136 @@ import { LoggingService } from '@angularlicious/logging';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-
+ 
   title = 'logging-consumer';
 
   constructor(
-    private loggingService: LoggingService
+    private loggingService: LoggingWithConfigService
   ) {
-    this.loggingService.log(`Message from constructor at ${new Date(Date.now()).toLocaleTimeString()}`)
+    this.loggingService.log(`Running constructor from AppComponent`);
   }
 
   ngOnInit(): void {
-    this.loggingService.log(`Message from ngOnInit at ${new Date(Date.now()).toLocaleTimeString()}`)
+    this.loggingService.log(`Running ngOnInit from AppComponent`);
   }
 }
+```
+
+## Publishing Custom Libraries
+
+Preparing the library for publishing requires building for different consumers
+
+### Update the Package Information
+
+The `package.json` file contains information about the library. The information is used by the package repository (i.e., see npm).
+
+* name
+* version: update the version using npm commands from the `dist` folder before publishing to npm
+  * More information at: https://docs.npmjs.com/about-semantic-versioning
+  * npm version commands: https://docs.npmjs.com/cli/version
+* repository
+* license
+* peerDependencies
+
+>Note: that the `package.json` doesn't contain `devDependencies` or `dependencies` sections.
+
+Here's is a sample of the [@angularlicious/actions published package](https://www.npmjs.com/package/@angularlicious/actions).
+
+```json
+{
+  "name": "@angularlicious/actions",
+  "version": "6.0.0",
+  "description": "@angularlicious/actions is a framework to build amazing business logic. It compliments the @angularlicious/rules-engine.",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "typescript",
+    "business logic",
+    "business actions",
+    "business rules",
+    "angularlicious",
+    "validation",
+    "javascript rules",
+    "Matt Vaughn",
+    "Angularlicious.com",
+    "Angularlicious"
+  ],
+  "author": "Matt Vaughn",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/angularlicious/angularlicious.git"
+  },
+  "peerDependencies": {
+    "@angularlicious/rules-engine": "^6.0.0"
+  }
+}
+```
+
+
+### Build the Library for Distribution/Publishing
+
+```ts
+ng build --project=logging-with-config
+```
+
+The `angular.json` configuration for the library project contains information about the specified builder.
+
+* using `ng-package.json` and `build-ng-packagr`
+
+```json
+"build": {
+  "builder": "@angular-devkit/build-ng-packagr:build",
+  "options": {
+    "tsConfig": "libs/logging-with-config/tsconfig.lib.json",
+    "project": "libs/logging-with-config/ng-package.json"
+  }
+},
+```
+
+The output of the build from `ng-packagr`:
+
+```ts
+ng build --project=logging-with-configBuilding Angular Package
+Building entry point '@angularlicious/logging-with-config'
+Compiling TypeScript sources through ngc
+Bundling to FESM2015
+Bundling to FESM5
+Bundling to UMD
+Minifying UMD bundle
+Copying declaration files
+Writing package metadata
+Removing scripts section in package.json as it's considered a potential security vulnerability.
+Built @angularlicious/logging-with-config
+Built Angular Package!
+ - from: D:\development\github\custom-angular-libraries-course\getting-started-with-libs\libs\logging-with-config
+ - to:   D:\development\github\custom-angular-libraries-course\getting-started-with-libs\dist\libs\logging-with-config
+ ```
+
+ ### Publish to NPM
+
+ Publishing to [npmjs.com](https://www.npmjs.com/) requires that you have an account. Publishing packages with public access is free. However, there is a small fee to use private repositories. 
+
+ 1. Create an account
+ 2. Determine if your account will use a scope
+
+* [How to contribute packages to the NPM registry.](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
+* [(How to Create a package.json file.](https://docs.npmjs.com/creating-a-package-json-file)
+* [(Create node.js Modules](https://docs.npmjs.com/creating-node-js-modules)
+* [(Package README files](https://docs.npmjs.com/about-package-readme-files)
+* [(Publishing Scoped Packages](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages)
+
+If you are publishing a public package with a scope.
+
+> Use command: `npm publish --access public`
+
+### Git Repository
+
+Part of you publish workflow should include pushing the same version to your Git repository.
+
+### Emulate Publishing with NPM Link
+
+Use the `npm link` command to emulate the process of installing an npm package. The `link` command will push the package to the `node_modules` folder for the workspace.
+
+```
+npm link ./dist/libs/logging-with-config
 ```

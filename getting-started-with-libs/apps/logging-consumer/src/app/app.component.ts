@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
 import { LoggingService } from '@angularlicious/logging';
 
 @Component({
@@ -7,16 +8,18 @@ import { LoggingService } from '@angularlicious/logging';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-
+ 
   title = 'logging-consumer';
 
   constructor(
-    private loggingService: LoggingService
+    private logging: LoggingService,
+    private loggingService: LoggingWithConfigService
   ) {
-    this.loggingService.log(`Message from constructor at ${new Date(Date.now()).toLocaleTimeString()}`)
+    this.logging.log(`Running constructor from AppComponent`);
   }
 
   ngOnInit(): void {
-    this.loggingService.log(`Message from ngOnInit at ${new Date(Date.now()).toLocaleTimeString()}`)
+    this.loggingService.log(`Running ngOnInit from AppComponent`);
   }
+}
 }

@@ -16,6 +16,9 @@
     },
     "logging-consumer-e2e": {
       "tags": []
+    },
+    "logging-with-config": {
+      "tags": []
     }
   }
 }
