@@ -17,6 +17,11 @@ A course on developing, testing, integrating, and publishing custom Angular libr
     - [Add Service to the Library](#add-service-to-the-library)
     - [AppModule Configuration](#appmodule-configuration)
     - [Use the LoggingService](#use-the-loggingservice)
+  - [Publishing Custom Libraries](#publishing-custom-libraries)
+    - [Update the Package Information](#update-the-package-information)
+    - [Build the Library for Distribution/Publishing](#build-the-library-for-distributionpublishing)
+    - [Git Repository](#git-repository)
+    - [Emulate Publishing with NPM Link](#emulate-publishing-with-npm-link)
 
 ## Getting Started with Libraries
 
@@ -562,4 +567,123 @@ export class AppComponent implements OnInit {
     this.loggingService.log(`Running ngOnInit from AppComponent`);
   }
 }
+```
+
+## Publishing Custom Libraries
+
+Preparing the library for publishing requires building for different consumers
+
+### Update the Package Information
+
+The `package.json` file contains information about the library. The information is used by the package repository (i.e., see npm).
+
+* name
+* version: update the version using npm commands from the `dist` folder before publishing to npm
+  * More information at: https://docs.npmjs.com/about-semantic-versioning
+  * npm version commands: https://docs.npmjs.com/cli/version
+* repository
+* license
+* peerDependencies
+
+>Note: that the `package.json` doesn't contain `devDependencies` or `dependencies` sections.
+
+Here's is a sample of the [@angularlicious/actions published package](https://www.npmjs.com/package/@angularlicious/actions).
+
+```json
+{
+  "name": "@angularlicious/actions",
+  "version": "6.0.0",
+  "description": "@angularlicious/actions is a framework to build amazing business logic. It compliments the @angularlicious/rules-engine.",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "typescript",
+    "business logic",
+    "business actions",
+    "business rules",
+    "angularlicious",
+    "validation",
+    "javascript rules",
+    "Matt Vaughn",
+    "Angularlicious.com",
+    "Angularlicious"
+  ],
+  "author": "Matt Vaughn",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/angularlicious/angularlicious.git"
+  },
+  "peerDependencies": {
+    "@angularlicious/rules-engine": "^6.0.0"
+  }
+}
+```
+
+
+### Build the Library for Distribution/Publishing
+
+```ts
+ng build --project=logging-with-config
+```
+
+The `angular.json` configuration for the library project contains information about the specified builder.
+
+* using `ng-package.json` and `build-ng-packagr`
+
+```json
+"build": {
+  "builder": "@angular-devkit/build-ng-packagr:build",
+  "options": {
+    "tsConfig": "libs/logging-with-config/tsconfig.lib.json",
+    "project": "libs/logging-with-config/ng-package.json"
+  }
+},
+```
+
+The output of the build from `ng-packagr`:
+
+```ts
+ng build --project=logging-with-configBuilding Angular Package
+Building entry point '@angularlicious/logging-with-config'
+Compiling TypeScript sources through ngc
+Bundling to FESM2015
+Bundling to FESM5
+Bundling to UMD
+Minifying UMD bundle
+Copying declaration files
+Writing package metadata
+Removing scripts section in package.json as it's considered a potential security vulnerability.
+Built @angularlicious/logging-with-config
+Built Angular Package!
+ - from: D:\development\github\custom-angular-libraries-course\getting-started-with-libs\libs\logging-with-config
+ - to:   D:\development\github\custom-angular-libraries-course\getting-started-with-libs\dist\libs\logging-with-config
+ ```
+
+ ### Publish to NPM
+
+ Publishing to [npmjs.com](https://www.npmjs.com/) requires that you have an account. Publishing packages with public access is free. However, there is a small fee to use private repositories. 
+
+ 1. Create an account
+ 2. Determine if your account will use a scope
+
+* [How to contribute packages to the NPM registry.](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
+* [(How to Create a package.json file.](https://docs.npmjs.com/creating-a-package-json-file)
+* [(Create node.js Modules](https://docs.npmjs.com/creating-node-js-modules)
+* [(Package README files](https://docs.npmjs.com/about-package-readme-files)
+* [(Publishing Scoped Packages](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages)
+
+If you are publishing a public package with a scope.
+
+> Use command: `npm publish --access public`
+
+### Git Repository
+
+Part of you publish workflow should include pushing the same version to your Git repository.
+
+### Emulate Publishing with NPM Link
+
+Use the `npm link` command to emulate the process of installing an npm package. The `link` command will push the package to the `node_modules` folder for the workspace.
+
+```
+npm link ./dist/libs/logging-with-config
 ```
