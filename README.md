@@ -81,7 +81,7 @@ UPDATE tsconfig.json (502 bytes)
 
 ### Workspace Updates When a Library is Generated
 
-The following `devDependencies are added to the workspace to support building the library using `ng-packagr`. 
+The following `devDependencies` are added to the workspace to support building the library using `ng-packagr`. 
 
 ```json
 "@angular-devkit/build-ng-packagr": "~0.10.0",
