@@ -168,6 +168,41 @@
           }
         }
       }
+    },
+    "logging-with-config": {
+      "root": "libs/logging-with-config",
+      "sourceRoot": "libs/logging-with-config/src",
+      "projectType": "library",
+      "prefix": "angularlicious",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "libs/logging-with-config/tsconfig.lib.json",
+            "project": "libs/logging-with-config/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "libs/logging-with-config/src/test.ts",
+            "tsConfig": "libs/logging-with-config/tsconfig.spec.json",
+            "karmaConfig": "libs/logging-with-config/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/logging-with-config/tsconfig.lib.json",
+              "libs/logging-with-config/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
   "cli": {
