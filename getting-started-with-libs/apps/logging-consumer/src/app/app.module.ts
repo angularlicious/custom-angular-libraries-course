@@ -4,12 +4,11 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NxModule } from '@nrwl/nx';
 import { RouterModule } from '@angular/router';
-import { LoggingWithConfigService } from '@angularlicious/logging-with-config';
+import { LoggingWithConfigService, LoggingWithConfigModule } from '@angularlicious/logging-with-config';
 
 const config = {
-  name: 'NG-APP-CONFIG'
+  name: 'FRONTEND-FEST-CHICAGO-2019'
 }
-import { LoggingModule, LoggingService } from '@angularlicious/logging';
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,9 +20,6 @@ import { LoggingModule, LoggingService } from '@angularlicious/logging';
   ],
   providers: [
     LoggingWithConfigService
-  ],
-  providers: [
-    LoggingService
   ],
   bootstrap: [AppComponent]
 })
