@@ -10,6 +10,7 @@ const config = {
   name: 'NG-APP-CONFIG'
 }
 import { LoggingModule, LoggingService } from '@angularlicious/logging';
+import { LoggingWithConfigModule } from 'dist/libs/logging-with-config';
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,9 +22,6 @@ import { LoggingModule, LoggingService } from '@angularlicious/logging';
   ],
   providers: [
     LoggingWithConfigService
-  ],
-  providers: [
-    LoggingService
   ],
   bootstrap: [AppComponent]
 })
